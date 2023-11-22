@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use App\Rules\ValidateStatusInput;
 use Illuminate\Support\Facades\Schema;
 
-#CLASS RESPONING BERISI FUNCTION UNTUK MENJALANKAN BERBAGAI MACAM AKSI RESPONSE
 class Responsing{
     public $query;
     public $message;
@@ -21,7 +20,6 @@ class Responsing{
     public $sortColumn;
     public $sortOrder;
 
-    #FUNCTION UNTUK MENGE-SET VALUE DARI VARIABEL YANG TERSEDIA DI CLASS RESPONING INI
     function setQuery($query){
         $this->query = $query;
     }
@@ -37,7 +35,7 @@ class Responsing{
     function setSortOrder($sortOrder){
         $this->sortOrder = $sortOrder;
     }
-    #SET FILTERING
+    #FILTERING
     function setFilteringTarget($filteringTarget){
         $this->filteringTarget = $filteringTarget;
     }
@@ -46,14 +44,14 @@ class Responsing{
     }
 
     #<--ACTION FUNCTION-->
-    #FUNCTION UNTUK MENAMPILKAN RESPONSE HANYA PESAN/MESSAGE
+    #GET MESSAGE ONLY
     function getMsgOnly(){
         $data = [
             "message"=> $this->message
         ];
         return response()->json($data,$this->statusCode);
     }
-    #FUNCTION UNTUK MENAMPILKAN RESPONSE PESAN/MESSAGE DAN DATA
+    #GET MESSAGE AND DATA
     function getMsgAndData(){
         $data = [
             "message"=> $this->message,
@@ -61,7 +59,7 @@ class Responsing{
         ];
         return response()->json($data,$this->statusCode);
     }
-    #FUNCTION UNTUK MENGECEK TRUE OR FALSE
+    #IS TRUE?
     function isTrue(){
         if(Schema::hasColumn((new Patient())->getTable(),$this->sortColumn)){
             if($this->sortOrder == "asc" or $this->sortOrder == "desc"){
@@ -75,7 +73,7 @@ class Responsing{
             return false;
         }
     }
-    #FUNCTION UNTUK MELAKUKAN FILTERING
+    #FILTERING
     function filtering(){
         $filteringValue = $this->filteringValue;
         $filteringTarget = $this->filteringTarget;
@@ -103,7 +101,7 @@ class Responsing{
         }
         
     }
-    #FUNCTION UNTUK MELAKUKAN SORTING
+    #SORTING
     function getSort(){
         $query = Patient::query();
         $query->orderBy($this->sortColumn,$this->sortOrder);
@@ -119,12 +117,12 @@ class Responsing{
 class PatientsController extends Controller
 {
 
-    #GET ALL RESOURCE
+    #Get all resource
     public function index(Request $request){
             $gquery = Patient::query();
             $grequest= $request;
 
-        #FUNCTION VALIDASI APAKAH VALUE REQUEST SORT ADA DI DATABASE
+        #function validasi apakah value request sort ada di database
         function columnExist($sortColumn,$sortOrder,$message1,$message2,$statusCode){
             if(Schema::hasColumn((new Patient())->getTable(),$sortColumn)){
                 if($sortOrder == "asc" or $sortOrder == "desc"){
@@ -152,7 +150,7 @@ class PatientsController extends Controller
         
 
         #SORTING LOGIC
-        #KONDISI JIKA REQUEST MEMILIKI KATA SORT
+        #apakah request mempunyai kata sort
         if ($request->has('sort')) {
 
             #mendefinisikan value sort dan order ke dalam variabel
@@ -196,37 +194,21 @@ class PatientsController extends Controller
                 else{
                     #validasi kondisi jika value sort adalah "tanggal_masuk"
                     if($sortColumn == "tanggal_masuk"){
-                        if($sortOrder == "asc" or $sortOrder == "desc"){
-                            $sortPatientsByTanggalMasuk = new Responsing();
-                            $sortPatientsByTanggalMasuk->setSortColumn("out_date_at");
-                            $sortPatientsByTanggalMasuk->setSortOrder($sortOrder);
-                            $sortPatientsByTanggalMasuk->setMessage("Sorting patients by tanggal keluar");
-                            $sortPatientsByTanggalMasuk->setStatusCode(200);
-                            return $sortPatientsByTanggalMasuk->getSort(); 
-                        }
-                        else{
-                            $getOrderNotValidError = new Responsing();
-                            $getOrderNotValidError->setMessage("Order value must be asc or desc");
-                            $getOrderNotValidError->setStatusCode(404);
-                            return $getOrderNotValidError->getMsgOnly();
-                        }
+                        $sortPatientsByTanggalMasuk = new Responsing();
+                        $sortPatientsByTanggalMasuk->setSortColumn("in_date_at");
+                        $sortPatientsByTanggalMasuk->setSortOrder($sortOrder);
+                        $sortPatientsByTanggalMasuk->setMessage("Sorting patients by in date at");
+                        $sortPatientsByTanggalMasuk->setStatusCode(200);
+                        return $sortPatientsByTanggalMasuk->getSort();
                     }
                     #validasi kondisi jika value sort adalah "tanggal_keluar"
                     elseif($sortColumn == "tanggal_keluar"){
-                        if($sortOrder == "asc" or $sortOrder == "desc"){
-                            $sortPatientsByTanggalKeluar = new Responsing();
-                            $sortPatientsByTanggalKeluar->setSortColumn("out_date_at");
-                            $sortPatientsByTanggalKeluar->setSortOrder($sortOrder);
-                            $sortPatientsByTanggalKeluar->setMessage("Sorting patients by tanggal keluar");
-                            $sortPatientsByTanggalKeluar->setStatusCode(200);
-                            return $sortPatientsByTanggalKeluar->getSort(); 
-                        }
-                        else{
-                            $getOrderNotValidError = new Responsing();
-                            $getOrderNotValidError->setMessage("Order value must be asc or desc");
-                            $getOrderNotValidError->setStatusCode(404);
-                            return $getOrderNotValidError->getMsgOnly();
-                        }
+                        $sortPatientsByTanggalMasuk = new Responsing();
+                        $sortPatientsByTanggalMasuk->setSortColumn("out_date_at");
+                        $sortPatientsByTanggalMasuk->setSortOrder($sortOrder);
+                        $sortPatientsByTanggalMasuk->setMessage("Sorting patients by out date at");
+                        $sortPatientsByTanggalMasuk->setStatusCode(200);
+                        return $sortPatientsByTanggalMasuk->getSort(); 
                     }
                     else{
                         #memunculkan eror antara value sort dan order yg kosong
@@ -241,7 +223,6 @@ class PatientsController extends Controller
         else{
 
             #FILTER LOGIC
-            #LOGIC DALAM MELAKUKAN FILTERING BERDASARKAN VALUE REQUEST
             if($request){
 
                 #FILTERING BY NAME
@@ -280,7 +261,7 @@ class PatientsController extends Controller
                 }
                 
                 else{
-                    #GET ALL PATIENTS
+                    #Get All patients
                     $patients = Patient::all();
                     if($patients){
                         $getAllPatients = new Responsing();
@@ -308,7 +289,6 @@ class PatientsController extends Controller
         $possibleStatus = ["sembuh","positif","meninggal"];
         $validateStatus = new ValidateStatusInput($possibleStatus);
 
-        #VALIDASI INPUT MENGGUNAKAN RULES INPUT
         $inputRules = [
             "name"=>"required|regex:/^[\pL\s\-]+$/u|max:255",
             "phone"=>"required|numeric|digits:12|",
